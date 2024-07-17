@@ -1,0 +1,282 @@
+-- 1. Overview of the dataset
+-- Count the total number of records
+SELECT COUNT(*) AS total_records FROM amazon_products;
+
+-- 2. Basic statistics
+-- Average, minimum, and maximum discounted price
+SELECT 
+    AVG(Discounted_Price) AS avg_discounted_price,
+    MIN(Discounted_Price) AS min_discounted_price,
+    MAX(Discounted_Price) AS max_discounted_price
+FROM amazon_products;
+
+-- Average, minimum, and maximum actual price
+SELECT 
+    AVG(Actual_Price) AS avg_actual_price,
+    MIN(Actual_Price) AS min_actual_price,
+    MAX(Actual_Price) AS max_actual_price
+FROM amazon_products;
+
+-- Average rating and total rating count
+SELECT 
+    AVG(Rating) AS avg_rating,
+    SUM(Rating_Count) AS total_rating_count
+FROM amazon_products;
+
+-- 3. Distribution of ratings
+-- Count of products by rating
+SELECT 
+    Rating, 
+    COUNT(*) AS count 
+FROM amazon_products 
+GROUP BY Rating 
+ORDER BY Rating;
+
+-- 4. Distribution of discounts
+-- Count of products by discount percentage
+SELECT 
+    Discount_Percentage, 
+    COUNT(*) AS count 
+FROM amazon_products 
+GROUP BY Discount_Percentage 
+ORDER BY COUNT(*) DESC;
+
+-- 5. Top categories
+-- Count of products by category
+SELECT 
+    Category, 
+    COUNT(*) AS count 
+FROM amazon_products 
+GROUP BY Category 
+ORDER BY COUNT(*) DESC 
+LIMIT 10;
+
+-- 6. Top products by rating count
+-- Top 10 products with the highest rating count
+SELECT 
+    Product_Name, 
+    Rating_Count 
+FROM amazon_products 
+ORDER BY Rating_Count DESC 
+LIMIT 10;
+
+-- 7. Products with the highest discounts
+-- Top 10 products with the highest discount percentage
+SELECT 
+    Product_Name, 
+    Discount_Percentage 
+FROM amazon_products 
+ORDER BY Discount_Percentage DESC 
+LIMIT 10;
+
+-- 8. Products with the highest prices
+-- Top 10 products with the highest actual prices
+SELECT 
+    Product_Name, 
+    Actual_Price 
+FROM amazon_products 
+ORDER BY Actual_Price DESC 
+LIMIT 10;
+
+-- 9. Products with the lowest prices
+-- Top 10 products with the lowest discounted prices
+SELECT 
+    Product_Name, 
+    Discounted_Price 
+FROM amazon_products 
+ORDER BY Discounted_Price ASC 
+LIMIT 10;
+
+-- 10. Products by user review count
+-- Count of products by the number of user reviews
+SELECT 
+    Product_Name, 
+    LENGTH(User_Id) - LENGTH(REPLACE(User_Id, ',', '')) + 1 AS review_count 
+FROM amazon_products 
+ORDER BY review_count DESC 
+LIMIT 10;
+
+-- 11. Products with the highest number of positive reviews
+-- Top 10 products with the highest average rating
+SELECT 
+    Product_Name, 
+    AVG(Rating) AS avg_rating 
+FROM amazon_products 
+GROUP BY Product_Name 
+ORDER BY avg_rating DESC 
+LIMIT 10;
+
+-- 12. Products with the highest number of negative reviews
+-- Top 10 products with the lowest average rating
+SELECT 
+    Product_Name, 
+    AVG(Rating) AS avg_rating 
+FROM amazon_products 
+GROUP BY Product_Name 
+ORDER BY avg_rating ASC 
+LIMIT 10;
+
+-- 13. Categories with the highest average discount
+-- Top 10 categories with the highest average discount percentage
+SELECT 
+    Category, 
+    AVG(CAST(REPLACE(Discount_Percentage, '%', '') AS FLOAT)) AS avg_discount 
+FROM amazon_products 
+GROUP BY Category 
+ORDER BY avg_discount DESC 
+LIMIT 10;
+
+-- 14. Categories with the highest average rating
+-- Top 10 categories with the highest average rating
+SELECT 
+    Category, 
+    AVG(Rating) AS avg_rating 
+FROM amazon_products 
+GROUP BY Category 
+ORDER BY avg_rating DESC 
+LIMIT 10;
+
+-- 15. Categories with the most reviews
+-- Top 10 categories with the highest total rating count
+SELECT 
+    Category, 
+    SUM(Rating_Count) AS total_rating_count 
+FROM amazon_products 
+GROUP BY Category 
+ORDER BY total_rating_count DESC 
+LIMIT 10;
+
+-- 16. Average price per category
+-- Average actual price and discounted price per category
+SELECT 
+    Category, 
+    AVG(Actual_Price) AS avg_actual_price, 
+    AVG(Discounted_Price) AS avg_discounted_price 
+FROM amazon_products 
+GROUP BY Category 
+ORDER BY avg_actual_price DESC;
+
+-- 17. Average rating per category
+-- Average rating per category
+SELECT 
+    Category, 
+    AVG(Rating) AS avg_rating 
+FROM amazon_products 
+GROUP BY Category 
+ORDER BY avg_rating DESC;
+
+-- 18. Products with most detailed reviews
+-- Top 10 products with the longest review content
+SELECT 
+    Product_Name, 
+    LENGTH(Review_Content) AS review_length 
+FROM amazon_products 
+ORDER BY review_length DESC 
+LIMIT 10;
+
+-- 19. Distribution of review titles
+-- Count of review titles by length
+SELECT 
+    LENGTH(Review_Title) AS title_length, 
+    COUNT(*) AS count 
+FROM amazon_products 
+GROUP BY title_length 
+ORDER BY title_length;
+
+-- 20. Products with the most diverse user base
+-- Top 10 products with the highest number of unique users
+SELECT 
+    Product_Name, 
+    LENGTH(User_Id) - LENGTH(REPLACE(User_Id, ',', '')) + 1 AS unique_user_count 
+FROM amazon_products 
+ORDER BY unique_user_count DESC 
+LIMIT 10;
+
+-- 21. Products with the most positive review titles
+-- Top 10 products with the highest average rating and positive review titles
+SELECT 
+    Product_Name, 
+    AVG(Rating) AS avg_rating, 
+    Review_Title 
+FROM amazon_products 
+WHERE Review_Title LIKE '%good%' 
+    OR Review_Title LIKE '%excellent%' 
+    OR Review_Title LIKE '%great%' 
+GROUP BY Product_Name 
+ORDER BY avg_rating DESC 
+LIMIT 10;
+
+-- 22. Products with the most negative review titles
+-- Top 10 products with the lowest average rating and negative review titles
+SELECT 
+    Product_Name, 
+    AVG(Rating) AS avg_rating, 
+    Review_Title 
+FROM amazon_products 
+WHERE Review_Title LIKE '%bad%' 
+    OR Review_Title LIKE '%poor%' 
+    OR Review_Title LIKE '%terrible%' 
+GROUP BY Product_Name 
+ORDER BY avg_rating ASC 
+LIMIT 10;
+
+-- 23. Most common words in product names
+-- Top 10 most common words in product names
+WITH product_words AS (
+    SELECT 
+        UNNEST(STRING_TO_ARRAY(Product_Name, ' ')) AS word 
+    FROM amazon_products
+)
+SELECT 
+    word, 
+    COUNT(*) AS count 
+FROM product_words 
+GROUP BY word 
+ORDER BY count DESC 
+LIMIT 10;
+
+-- 24. Most common words in review titles
+-- Top 10 most common words in review titles
+WITH review_title_words AS (
+    SELECT 
+        UNNEST(STRING_TO_ARRAY(Review_Title, ' ')) AS word 
+    FROM amazon_products
+)
+SELECT 
+    word, 
+    COUNT(*) AS count 
+FROM review_title_words 
+GROUP BY word 
+ORDER BY count DESC 
+LIMIT 10;
+
+-- 25. Most common words in review content
+-- Top 10 most common words in review content
+WITH review_content_words AS (
+    SELECT 
+        UNNEST(STRING_TO_ARRAY(Review_Content, ' ')) AS word 
+    FROM amazon_products
+)
+SELECT 
+    word, 
+    COUNT(*) AS count 
+FROM review_content_words 
+GROUP BY word 
+ORDER BY count DESC 
+LIMIT 10;
+
+-- 26. Products with the most frequent reviewers
+-- Top 10 products with the highest number of reviews from frequent reviewers
+WITH frequent_reviewers AS (
+    SELECT 
+        UNNEST(STRING_TO_ARRAY(User_Id, ',')) AS user_id 
+    FROM amazon_products
+)
+SELECT 
+    Product_Name, 
+    COUNT(DISTINCT user_id) AS reviewer_count 
+FROM amazon_products, frequent_reviewers 
+WHERE amazon_products.User_Id LIKE '%' || frequent_reviewers.user_id || '%' 
+GROUP BY Product_Name 
+ORDER BY reviewer_count DESC 
+LIMIT 10;
